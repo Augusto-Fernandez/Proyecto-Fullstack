@@ -1,16 +1,14 @@
 import express, { NextFunction, Request, Response } from "express";
-import noteSchema from "./models/noteSchema";
+import morgan from "morgan";
+
+import notesRouter from "./routes/notesRouter";
 
 const app = express();
 
-app.get("/", async (req , res, next)=>{
-    try{
-        const notes = await noteSchema.find().exec();
-        res.status(200).json(notes);
-    }catch(e){
-        next(e);
-    }
-});
+app.use(morgan("dev"));
+app.use(express.json());
+
+app.use("/api/notes", notesRouter);
 
 app.use((req, res, next) => {
     next(Error("Endpoint not Found"));
