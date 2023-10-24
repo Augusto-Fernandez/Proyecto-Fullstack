@@ -15,19 +15,20 @@ export const getNotes: RequestHandler = async (req , res, next)=>{ // este tipad
 export const getNote: RequestHandler = async (req, res, next) => {
     try {
         const noteId = req.params.id;
-        const note = await noteSchema.findById(noteId).exec();// ver porque usa exec()
 
         if(!mongoose.isValidObjectId(noteId)){
             throw createHttpError(404, "Invalid Id");
         }
 
-        if(!noteId){
+        const note = await noteSchema.findById(noteId).exec();// ver porque usa exec()
+
+        if(!note){
             throw createHttpError(404, "Note not Found");
         }
 
         res.status(200).json(note);
-    } catch (error) {
-        next(error);
+    } catch (e) {
+        next(e);
     }
 };
 
@@ -50,7 +51,67 @@ export const createNote: RequestHandler<unknown, unknown, createNoteBody, unknow
             text: text
         });
         res.status(201).json(notes);
-    } catch (error) {
-        next(error);
+    } catch (e) {
+        next(e);
+    }
+};
+
+interface UpdateNoteParam{
+    id: string
+}
+
+interface UpdateNoteBody{
+    title?: string,
+    text?:string
+}
+
+export const updateNote: RequestHandler<UpdateNoteParam, unknown, UpdateNoteBody, unknown> = async (req, res, next) => {
+    try {
+        const noteId = req.params.id;
+        const title = req.body.title;
+        const text = req.body.text;
+
+        if(!mongoose.isValidObjectId(noteId)){
+            throw createHttpError(404, "Invalid Id");
+        }
+
+        if(!title){
+            throw createHttpError(400, "Note must hace a title");
+        }
+
+        const note = await noteSchema.findById(noteId).exec();
+
+        if(!note){
+            throw createHttpError(404, "Note not Found");
+        }
+
+        note.title = title;
+        note.text = text;
+
+        const updatedNote = await note.save(); // explica que no hizo FindOneAndUpdate() porque hace otro fetch cuando ya se hizo un primer fetch en el findById
+        res.status(200).json(updatedNote);
+    } catch (e) {
+        next(e);
+    }
+};
+
+export const deleteNote: RequestHandler<UpdateNoteParam, unknown, UpdateNoteBody, unknown> = async (req, res, next) => {
+    try {
+        const noteId = req.params.id;
+
+        if(!mongoose.isValidObjectId(noteId)){
+            throw createHttpError(404, "Invalid Id");
+        }
+
+        const note = await noteSchema.findById(noteId).exec();
+
+        if(!note){
+            throw createHttpError(404, "Note not Found");
+        }
+
+        await note.deleteOne(); // el usó remove(), pero es de una versión vieja de mongoose
+        res.sendStatus(204); // como no necesita que devuelva un json, sendStatus devuelve una respuesta. send() no devuelve respuestas, en los otros endpoints lo hacía json()
+    } catch (e) {
+        next(e);
     }
 };
