@@ -1,0 +1,12 @@
+.noteCard {
+    background-color: cornsilk;
+}
+
+.cardBody {
+    overflow: hidden; /*evita que el largo del texto supere el largo del card*/
+    mask-image: linear-gradient(180deg, #000 60%, transparent); /*hace una degrade del texto que excede el largo del card*/
+}
+
+.cardText {
+    white-space: pre-line; /* hace que respete el mismo lineado que está en mongo */
+}

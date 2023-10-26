@@ -1,5 +1,6 @@
 import express, { NextFunction, Request, Response } from "express";
 import morgan from "morgan";
+import cors from "cors";
 
 import notesRouter from "./routes/notesRouter";
 import createHttpError, { isHttpError } from "http-errors"; // explica que cuando se import con {} es porque no es una importación default
@@ -8,6 +9,7 @@ const app = express();
 
 app.use(morgan("dev"));
 app.use(express.json());
+app.use(cors()); // tengo que configurar CORS para que no haya problema entre el backend y frontend
 
 app.use("/api/notes", notesRouter);
 
