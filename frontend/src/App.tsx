@@ -8,12 +8,15 @@ import Note from './components/Note';
 import styles from '../src/styles/NotePage.module.css';
 import stylesUtils from '../src/styles/utils.module.css';
 import * as NotesApi from '../src/network/note_api';
-import AddNoteDialog from './components/AddNoteDialog';
+import AddEditNoteDialog from './components/AddEditNoteDialog';
+import {FaPlus} from 'react-icons/fa'; //icono +
 
 function App() {
   const [notes, setNotes] = useState<NoteModel[]>([]); // se declara que va a recibir un array con elementos Note
 
   const [showAddNoteDialog, setshowAddNoteDialog] = useState(false);
+
+  const [noteToEdit, setNoteToEdit] = useState<NoteModel|null>(null)
 
   useEffect(() => { // Hace que lo cambios ocurran cuando hace render
     async function loadNotes (){ // Las notas se reciben por promesa pero useEffect no puede ser asíncrono, por eso se hace una función asincrona dentro
@@ -28,23 +31,50 @@ function App() {
     loadNotes();
   }, []) // al poner [], useEffect se ejecuta una sola vez al principio. Si no se pone, useEffect se ejecuta en cada render
 
+  async function deleteNote(note: NoteModel){
+    try {
+      await NotesApi.deleteNote(note._id);
+      setNotes(notes.filter(existingNote => existingNote._id !== note._id));
+    } catch (e) {
+      console.error(e);
+      alert(e);
+    }
+  }
+
   return (
     <Container>
-      <Button className={`mb-4 ${stylesUtils.blockCenter}`} onClick={() => setshowAddNoteDialog(true)}>
+      <Button 
+        className={`mb-4 ${stylesUtils.blockCenter} ${stylesUtils.flexCenter}`} 
+        onClick={() => setshowAddNoteDialog(true)}
+      >
+        <FaPlus/>
         Add new Note
       </Button>
       <Row xs={1} md={2} xl={3} className="g-4">
         {notes.map(note => (
           <Col key={note._id}>
-            <Note note ={note} className={styles.note}/>
+            <Note 
+              note ={note} 
+              className={styles.note}
+              onNoteClicked={setNoteToEdit}
+              onDeleteNoteClicked={deleteNote}
+            />
           </Col>
         ))}
       </Row>
-      {showAddNoteDialog && <AddNoteDialog 
+      {showAddNoteDialog && <AddEditNoteDialog 
         onDismiss={() => setshowAddNoteDialog(false)}
         onNotesaved={(newNote) => {
           setNotes([...notes, newNote]);
           setshowAddNoteDialog(false);
+        }}
+      />}
+      {noteToEdit && <AddEditNoteDialog
+        noteToEdit={noteToEdit}
+        onDismiss={() => setNoteToEdit(null)}
+        onNotesaved={(updatedNote) =>{
+          setNotes(notes.map(existingNote => existingNote._id === updatedNote._id ? updatedNote : existingNote));
+          setNoteToEdit(null);
         }}
       />}
     </Container>

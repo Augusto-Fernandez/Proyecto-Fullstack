@@ -4,18 +4,29 @@ import { useForm } from "react-hook-form";
 import { NoteInput } from "../network/note_api";
 import * as NotesApi from "../network/note_api"; // lo hace por separado del otro porque no puede ponerle *
 
-interface addNoteDialogProps {
+interface AddEditNoteDialogProps {
+    noteToEdit?: NoteModel,
     onDismiss: () => void,
     onNotesaved: (note: NoteModel) => void
 }
 
-const AddNoteDialog = ({onDismiss, onNotesaved}: addNoteDialogProps) => {
+const AddEditNoteDialog = ({noteToEdit, onDismiss, onNotesaved}: AddEditNoteDialogProps) => {
 
-    const {register, handleSubmit, formState: {errors, isSubmitting} } = useForm<NoteInput>({});
+    const {register, handleSubmit, formState: {errors, isSubmitting} } = useForm<NoteInput>({
+        defaultValues:{
+            title: noteToEdit?.title || "",
+            text: noteToEdit?.title || ""
+        }
+    });
 
     async function onSubmit(input:NoteInput){
         try {
-            const noteResponse = await NotesApi.createNote(input);
+            let noteResponse: NoteModel;
+            if(noteToEdit){
+                noteResponse = await NotesApi.updateNote(noteToEdit._id, input);
+            }else{
+                noteResponse = await NotesApi.createNote(input);
+            }
             onNotesaved(noteResponse);
         } catch (e) {
             console.error(e);
@@ -27,11 +38,11 @@ const AddNoteDialog = ({onDismiss, onNotesaved}: addNoteDialogProps) => {
         <Modal show onHide={() => onDismiss()}>
             <Modal.Header closeButton>
                 <Modal.Title>
-                    Add Note
+                    {noteToEdit ? "Edit Note" : "Add Note"}
                 </Modal.Title>
             </Modal.Header>
             <Modal.Body>
-                <Form id="addNoteForm" onSubmit={handleSubmit(onSubmit)}>
+                <Form id="addEditNoteForm" onSubmit={handleSubmit(onSubmit)}>
                     <Form.Group className="mb-3">
                         <Form.Label>Title</Form.Label>
                         <Form.Control 
@@ -51,7 +62,7 @@ const AddNoteDialog = ({onDismiss, onNotesaved}: addNoteDialogProps) => {
                 </Form>
             </Modal.Body>
             <Modal.Footer>
-                <Button type="submit" form="addNoteForm" disabled={isSubmitting}>
+                <Button type="submit" form="addEditNoteForm" disabled={isSubmitting}>
                     Save
                 </Button>
             </Modal.Footer>
@@ -63,4 +74,4 @@ const AddNoteDialog = ({onDismiss, onNotesaved}: addNoteDialogProps) => {
 // explica que el boton del footer está desconectado del Form por lo que tiene que hacer un id:addNoteForm y conectarlos
 // el !! de isInvalid significa que convierte error en un booleano, si es truthy es true, si es falsy es false. ChatGPT explica que funciona al revez por eso es confuzo
 
-export default AddNoteDialog;
+export default AddEditNoteDialog;
