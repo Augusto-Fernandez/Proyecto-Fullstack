@@ -1,10 +1,10 @@
 import React, {useState, useEffect} from 'react';
 //import logo from './logo.svg';
 //import './App.css';
-import { Button } from 'react-bootstrap';
+import { Button, Spinner } from 'react-bootstrap';
 import { Container, Row, Col } from 'react-bootstrap';
 import { NoteModel } from './models/noteModel';
-import Note from './components/Note';
+import Note from "./components/Note";
 import styles from '../src/styles/NotePage.module.css';
 import stylesUtils from '../src/styles/utils.module.css';
 import * as NotesApi from '../src/network/note_api';
@@ -16,16 +16,23 @@ function App() {
 
   const [showAddNoteDialog, setshowAddNoteDialog] = useState(false);
 
-  const [noteToEdit, setNoteToEdit] = useState<NoteModel|null>(null)
+  const [notesLoading, setNotesLoading] = useState(true); // lo puso en true porque las notes se cargan cuando hace render
+  const [showNotesLoadingError, setNotesLoadingError] = useState(false);
+
+  const [noteToEdit, setNoteToEdit] = useState<NoteModel|null>(null);
 
   useEffect(() => { // Hace que lo cambios ocurran cuando hace render
     async function loadNotes (){ // Las notas se reciben por promesa pero useEffect no puede ser asíncrono, por eso se hace una función asincrona dentro
       try {
+        setNotesLoadingError(false);
+        setNotesLoading(true);
         const notes = await NotesApi.fetchNotes();
         setNotes(notes); //hace que ocurra el cambio en el render
       } catch (e) {
         console.error(e);
-        alert(e);
+        setNotesLoadingError(true);
+      } finally {
+        setNotesLoading(false);
       }
     }
     loadNotes();
@@ -41,8 +48,22 @@ function App() {
     }
   }
 
+  // los sacó del container para hacer que valide que se cargaron antes del render
+  const notesGrid = <Row xs={1} md={2} xl={3} className={`g-4 ${styles.notesGrid}`}>
+                      {notes.map(note => (
+                        <Col key={note._id}>
+                          <Note 
+                            note ={note} 
+                            className={styles.note}
+                            onNoteClicked={setNoteToEdit}
+                            onDeleteNoteClicked={deleteNote}
+                          />
+                        </Col>
+                      ))}
+                    </Row>
+
   return (
-    <Container>
+    <Container className={styles.notesPage}>
       <Button 
         className={`mb-4 ${stylesUtils.blockCenter} ${stylesUtils.flexCenter}`} 
         onClick={() => setshowAddNoteDialog(true)}
@@ -50,18 +71,11 @@ function App() {
         <FaPlus/>
         Add new Note
       </Button>
-      <Row xs={1} md={2} xl={3} className="g-4">
-        {notes.map(note => (
-          <Col key={note._id}>
-            <Note 
-              note ={note} 
-              className={styles.note}
-              onNoteClicked={setNoteToEdit}
-              onDeleteNoteClicked={deleteNote}
-            />
-          </Col>
-        ))}
-      </Row>
+      {notesLoading && <Spinner animation='border' variant='primary'/>}
+      {showNotesLoadingError && <p>Something went wrong. Please refresh the page</p>}
+      {!notesLoading && !showNotesLoadingError && <>
+        {notes.length>0 ? notesGrid : <p>You don't have notes</p>}
+      </>}
       {showAddNoteDialog && <AddEditNoteDialog 
         onDismiss={() => setshowAddNoteDialog(false)}
         onNotesaved={(newNote) => {
