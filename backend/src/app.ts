@@ -1,16 +1,33 @@
 import express, { NextFunction, Request, Response } from "express";
 import morgan from "morgan";
 import cors from "cors";
+import session from "express-session";
 
 import notesRouter from "./routes/notesRouter";
+import userRouter from "./routes/usersRouter";
 import createHttpError, { isHttpError } from "http-errors"; // explica que cuando se import con {} es porque no es una importación default
+import env from "./util/validateEnv";
+import MongoStore from "connect-mongo";
 
 const app = express();
 
 app.use(morgan("dev"));
 app.use(express.json());
+app.use(session({
+    secret: env.SESSION_SECRET,
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+        maxAge: 60 * 60 * 1000,
+    },
+    rolling: true,
+    store: MongoStore.create({
+        mongoUrl: env.DB_URI
+    })
+}));
 app.use(cors()); // tengo que configurar CORS para que no haya problema entre el backend y frontend
 
+app.use("/api/users", userRouter);
 app.use("/api/notes", notesRouter);
 
 app.use((req, res, next) => {
