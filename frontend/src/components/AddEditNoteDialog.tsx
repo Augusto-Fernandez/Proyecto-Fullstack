@@ -3,6 +3,7 @@ import { NoteModel } from "../models/noteModel";
 import { useForm } from "react-hook-form";
 import { NoteInput } from "../network/note_api";
 import * as NotesApi from "../network/note_api"; // lo hace por separado del otro porque no puede ponerle *
+import TextInputField from "./Form/TextInputField";
 
 interface AddEditNoteDialogProps {
     noteToEdit?: NoteModel,
@@ -43,22 +44,23 @@ const AddEditNoteDialog = ({noteToEdit, onDismiss, onNotesaved}: AddEditNoteDial
             </Modal.Header>
             <Modal.Body>
                 <Form id="addEditNoteForm" onSubmit={handleSubmit(onSubmit)}>
-                    <Form.Group className="mb-3">
-                        <Form.Label>Title</Form.Label>
-                        <Form.Control 
-                            type="text" 
-                            placeholder="title"
-                            isInvalid={!!errors.title} 
-                            {...register("title",{required: "Required"})}
-                        />
-                        <Form.Control.Feedback type="invalid">
-                            {errors.title?.message}
-                        </Form.Control.Feedback>
-                    </Form.Group>
-                    <Form.Group className="mb-3">
-                        <Form.Label>Text</Form.Label>
-                        <Form.Control as="textarea" rows={5} placeholder="text" {...register("text")}/>
-                    </Form.Group>
+                    <TextInputField
+                        name="title"
+                        label="Title"
+                        type="text"
+                        placeholder="Title"
+                        register={register}
+                        registerOptions={{ required: "Required" }}
+                        error={errors.title}
+                    />
+                    <TextInputField
+                        name="text"
+                        label="Text"
+                        as="textarea"
+                        rows={5}
+                        placeholder="Text"
+                        register={register}
+                    />
                 </Form>
             </Modal.Body>
             <Modal.Footer>
@@ -75,3 +77,38 @@ const AddEditNoteDialog = ({noteToEdit, onDismiss, onNotesaved}: AddEditNoteDial
 // el !! de isInvalid significa que convierte error en un booleano, si es truthy es true, si es falsy es false. ChatGPT explica que funciona al revez por eso es confuzo
 
 export default AddEditNoteDialog;
+
+/* CODIGO ANTERIOR DEL FORMULARIO
+    <Modal show onHide={() => onDismiss()}>
+        <Modal.Header closeButton>
+            <Modal.Title>
+                {noteToEdit ? "Edit Note" : "Add Note"}
+            </Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+            <Form id="addEditNoteForm" onSubmit={handleSubmit(onSubmit)}>
+                <Form.Group className="mb-3">
+                    <Form.Label>Title</Form.Label>
+                        <Form.Control 
+                            type="text" 
+                            placeholder="title"
+                            isInvalid={!!errors.title} 
+                            {...register("title",{required: "Required"})}
+                        />
+                        <Form.Control.Feedback type="invalid">
+                            {errors.title?.message}
+                        </Form.Control.Feedback>
+                </Form.Group>
+                <Form.Group className="mb-3">
+                    <Form.Label>Text</Form.Label>
+                    <Form.Control as="textarea" rows={5} placeholder="text" {...register("text")}/>
+                </Form.Group>
+            </Form>
+        </Modal.Body>
+        <Modal.Footer>
+            <Button type="submit" form="addEditNoteForm" disabled={isSubmitting}>
+                Save
+            </Button>
+        </Modal.Footer>
+    </Modal>
+*/

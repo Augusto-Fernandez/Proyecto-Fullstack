@@ -10,6 +10,7 @@ import stylesUtils from '../src/styles/utils.module.css';
 import * as NotesApi from '../src/network/note_api';
 import AddEditNoteDialog from './components/AddEditNoteDialog';
 import {FaPlus} from 'react-icons/fa'; //icono +
+import SignUpModal from './components/SignUpModal';
 
 function App() {
   const [notes, setNotes] = useState<NoteModel[]>([]); // se declara que va a recibir un array con elementos Note
@@ -90,6 +91,10 @@ function App() {
           setNotes(notes.map(existingNote => existingNote._id === updatedNote._id ? updatedNote : existingNote));
           setNoteToEdit(null);
         }}
+      />}
+      {true && <SignUpModal
+        onDismiss={() => {}}
+        onSignUpSuccessful={() => {}}
       />}
     </Container>
   );
