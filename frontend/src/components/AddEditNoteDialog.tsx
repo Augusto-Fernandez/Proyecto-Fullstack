@@ -8,10 +8,10 @@ import TextInputField from "./Form/TextInputField";
 interface AddEditNoteDialogProps {
     noteToEdit?: NoteModel,
     onDismiss: () => void,
-    onNotesaved: (note: NoteModel) => void
+    onNoteSaved: (note: NoteModel) => void
 }
 
-const AddEditNoteDialog = ({noteToEdit, onDismiss, onNotesaved}: AddEditNoteDialogProps) => {
+const AddEditNoteDialog = ({noteToEdit, onDismiss, onNoteSaved}: AddEditNoteDialogProps) => {
 
     const {register, handleSubmit, formState: {errors, isSubmitting} } = useForm<NoteInput>({
         defaultValues:{
@@ -28,7 +28,7 @@ const AddEditNoteDialog = ({noteToEdit, onDismiss, onNotesaved}: AddEditNoteDial
             }else{
                 noteResponse = await NotesApi.createNote(input);
             }
-            onNotesaved(noteResponse);
+            onNoteSaved(noteResponse);
         } catch (e) {
             console.error(e);
             alert(e);

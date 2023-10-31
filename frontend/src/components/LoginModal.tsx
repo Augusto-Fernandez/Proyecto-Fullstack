@@ -1,38 +1,42 @@
 import { useForm } from "react-hook-form";
 import { UserModel } from "../models/userModel";
-import { SignUpCredentials } from "../network/user_api";
+import { LoginCredentials } from "../network/user_api";
 import * as UserApi from "../network/user_api";
-import { Button, Form, Modal } from "react-bootstrap";
+import { Alert, Button, Form, Modal } from "react-bootstrap";
 import TextInputField from "./Form/TextInputField";
 import styleUtils from "../styles/utils.module.css";
+//import { useState } from 'react';
+//import { UnauthorizedError } from "../errors/http_errors";
 
-interface SignUpModalProps {
-    onDismiss: () => void, // es para cerrar el modal
-    onSignUpSuccessful: (user: UserModel) => void,
+interface LoginModalProps {
+    onDismiss: () => void,
+    onLoginSuccessful: (user: UserModel) => void,
 }
 
-const SignUpModal = ({ onDismiss, onSignUpSuccessful }: SignUpModalProps) => {
+const LoginModal = ({ onDismiss, onLoginSuccessful }: LoginModalProps) => {
 
-    const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<SignUpCredentials>();
+    //const [errorText, setErrorText] = useState<string | null>(null);
 
-    async function onSubmit(credentials: SignUpCredentials) {
+    const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<LoginCredentials>();
+
+    async function onSubmit(credentials: LoginCredentials) {
         try {
-            const newUser = await UserApi.signUp(credentials);
-            onSignUpSuccessful(newUser);
+            const user = await UserApi.login(credentials);
+            onLoginSuccessful(user);
         } catch (e) {
             alert(e);
             console.error(e);
         }
     }
 
-    //show está en true
     return (
         <Modal show onHide={onDismiss}>
             <Modal.Header closeButton>
                 <Modal.Title>
-                    Sign Up
+                    Log In
                 </Modal.Title>
             </Modal.Header>
+
             <Modal.Body>
                 <Form onSubmit={handleSubmit(onSubmit)}>
                     <TextInputField
@@ -43,15 +47,6 @@ const SignUpModal = ({ onDismiss, onSignUpSuccessful }: SignUpModalProps) => {
                         register={register}
                         registerOptions={{ required: "Required" }}
                         error={errors.username}
-                    />
-                    <TextInputField
-                        name="email"
-                        label="Email"
-                        type="email"
-                        placeholder="Email"
-                        register={register}
-                        registerOptions={{ required: "Required" }}
-                        error={errors.email}
                     />
                     <TextInputField
                         name="password"
@@ -66,13 +61,12 @@ const SignUpModal = ({ onDismiss, onSignUpSuccessful }: SignUpModalProps) => {
                         type="submit"
                         disabled={isSubmitting}
                         className={styleUtils.width100}>
-                        Sign Up
+                        Log In
                     </Button>
                 </Form>
             </Modal.Body>
-
         </Modal>
-    ); //no el pasa id al botón porque está dentro del formulario
+    );
 }
 
-export default SignUpModal;
+export default LoginModal;
