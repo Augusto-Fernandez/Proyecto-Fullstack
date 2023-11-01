@@ -2,12 +2,13 @@ import express, { NextFunction, Request, Response } from "express";
 import morgan from "morgan";
 import cors from "cors";
 import session from "express-session";
+import MongoStore from "connect-mongo";
+import createHttpError, { isHttpError } from "http-errors"; // explica que cuando se import con {} es porque no es una importación default
 
 import notesRouter from "./routes/notesRouter";
 import userRouter from "./routes/usersRouter";
-import createHttpError, { isHttpError } from "http-errors"; // explica que cuando se import con {} es porque no es una importación default
 import env from "./util/validateEnv";
-import MongoStore from "connect-mongo";
+import { requiresAuth } from "./middleware/auth";
 
 const app = express();
 
@@ -28,7 +29,7 @@ app.use(session({
 app.use(cors()); // tengo que configurar CORS para que no haya problema entre el backend y frontend
 
 app.use("/api/users", userRouter);
-app.use("/api/notes", notesRouter);
+app.use("/api/notes", requiresAuth, notesRouter);
 
 app.use((req, res, next) => {
     next(createHttpError(404, "Endpoint not Found"));

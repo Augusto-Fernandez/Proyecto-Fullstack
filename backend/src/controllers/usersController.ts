@@ -5,13 +5,7 @@ import bcrypt from "bcrypt";
 
 export const getAuthenticatedUser: RequestHandler = async (req, res, next) => {
     try {
-        const authenticatedUser = req.session.userId;
-
-        if(!authenticatedUser){
-            throw createHttpError(401, "User not authenticated");
-        }
-
-        const user = await userSchema.findById(authenticatedUser).select("+email").exec();
+        const user = await userSchema.findById(req.session.userId).select("+email").exec();
         //.select("+email") es porque en el esquema lo había puesto como select a ese campo, esta es la manera de traerlo
         res.status(200).json(user);
     } catch (error) {
