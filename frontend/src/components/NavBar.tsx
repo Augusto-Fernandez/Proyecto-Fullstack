@@ -2,7 +2,7 @@ import { Container, Nav, Navbar } from "react-bootstrap";
 import { UserModel } from "../models/userModel";
 import NavBarLoggedInView from "./NavBarLoggedInView";
 import NavBarLoggedOutView from "./NavBarLoggedOutView";
-//import { Link } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 
 interface NavBarProps {
@@ -16,13 +16,13 @@ const NavBar = ({ loggedInUser, onSignUpClicked, onLoginClicked, onLogoutSuccess
     return (
         <Navbar bg="primary" variant="dark" expand="sm" sticky="top">
             <Container>
-                <Navbar.Brand>
+                <Navbar.Brand as={Link} to='/'>
                     Cool Notes App
                 </Navbar.Brand>
                 <Navbar.Toggle aria-controls="main-navbar" />
                 <Navbar.Collapse id="main-navbar">
                     <Nav>
-                        <Nav.Link>
+                        <Nav.Link as={Link} to='/privacy'>
                             Privacy
                         </Nav.Link>
                     </Nav>
@@ -36,6 +36,7 @@ const NavBar = ({ loggedInUser, onSignUpClicked, onLoginClicked, onLogoutSuccess
             </Container>
         </Navbar>
     );
-}
+}// explica que no se debe usar links con href porque reinicia la pagina, lo que hace es usar <Link>
+// sacó <Link> y en Nav.Link puso "as" y le pasó Link para que se comporte como Link
 
 export default NavBar;

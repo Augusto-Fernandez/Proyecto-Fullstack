@@ -1,13 +1,16 @@
 import { useState, useEffect } from 'react';
-import { Container } from 'react-bootstrap';
-import styles from '../src/styles/NotePage.module.css';
 import SignUpModal from './components/SignUpModal';
 import LoginModal from './components/LoginModal';
 import NavBar from './components/NavBar';
 import * as UserApi from './network/user_api';
 import { UserModel } from './models/userModel';
-import NotesPageLoggedInView from './components/NotesPageLoggedInView';
-import NotesPageLoggedOutView from './components/NotesPageLoggedOutView';
+import NotesPage from './pages/NotesPage';
+import { BrowserRouter } from 'react-router-dom';
+import { Container } from 'react-bootstrap';
+import { Route, Routes } from 'react-router';
+import PrivacyPage from './pages/PrivacyPage';
+import NotFoundPage from './pages/NotFoundPage';
+import styles from './styles/App.module.css';
 
 function App() {
   
@@ -30,43 +33,44 @@ function App() {
 
 
   return (
-    <div>
-      <NavBar
-        loggedInUser={loggedInUser}
-        onLoginClicked={() => setShowLoginModal(true)}
-        onSignUpClicked={() => setShowSignUpModal(true)}
-        onLogoutSuccessful={() => setLoggedInUser(null)}
-      />
-      <Container className={styles.notesPage}>
-        <>
-          {
-            loggedInUser
-              ? <NotesPageLoggedInView/>
-              : <NotesPageLoggedOutView/>
-          }
-        </>
-      </Container>
-      {showSignUpModal && <SignUpModal
-        onDismiss={() => setShowSignUpModal(false)}
-        onSignUpSuccessful={(user) => {
-          setLoggedInUser(user);
-          setShowSignUpModal(false);
-        }}
-      />}
-      {showLoginModal && <LoginModal
-        onDismiss={() => setShowLoginModal(false)}
-        onLoginSuccessful={(user) => {
-          setLoggedInUser(user);
-          setShowLoginModal(false);
-        }}
-      />}
-    </div>
+    <BrowserRouter>
+      <div>
+        <NavBar
+          loggedInUser={loggedInUser}
+          onLoginClicked={() => setShowLoginModal(true)}
+          onSignUpClicked={() => setShowSignUpModal(true)}
+          onLogoutSuccessful={() => setLoggedInUser(null)}
+        />
+        <Container className={styles.pageContainer}>
+          <Routes>
+            <Route path='/' element={<NotesPage loggedInUser={loggedInUser}/>}/>
+            <Route path='/privacy' element={<PrivacyPage/>}/>
+            <Route path='/*' element={<NotFoundPage/>}/>
+          </Routes>
+        </Container>
+        {showSignUpModal && <SignUpModal
+          onDismiss={() => setShowSignUpModal(false)}
+          onSignUpSuccessful={(user) => {
+            setLoggedInUser(user);
+            setShowSignUpModal(false);
+          }}
+        />}
+        {showLoginModal && <LoginModal
+          onDismiss={() => setShowLoginModal(false)}
+          onLoginSuccessful={(user) => {
+            setLoggedInUser(user);
+            setShowLoginModal(false);
+          }}
+        />}
+      </div>
+    </BrowserRouter>
   );
 } //1)toma el json y lo convierte a string LO BORRO
 //2) en el <Note>, note es el parámetro que hizo en el componente y key es el identificador, se le pasa el id de mongo
 //3) pone Container, dentro pone Row que sirve para hace grid, xs es una columna para pantallas chicas, md 2 para pantallas medias y xl 3 para pantallas grandes
 //4) g-4 es una clase de bootstrap, Pone Col para hacer columnas
 //5) no entendí bien lo que hizo con AddNoteDialog
+//6) al poner /* en la ruta, le dice que primero se fije en '/' y si no encuentra nada vaya a NotFoundPage
 export default App;
 
 /*
