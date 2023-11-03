@@ -1,13 +1,20 @@
 import { NoteModel } from "../models/noteModel";
+import { UnauthorizedError, ConflictError } from "../errors/http_errors";
 
 async function fetchData(input: RequestInfo, init?: RequestInit) { //son los mismos argumentos que recibe fetch()
     const response = await fetch(input, init);
-    if(response.ok){//ok es una propiedad de la respuesta
+    if (response.ok) {//ok es una propiedad de la respuesta
         return response;
     } else {
-        const errorBody = await response.json(); //recibe el json del error del endpoint
+        const errorBody = await response.json();//recibe el json del error del endpoint
         const errorMessage = errorBody.error;
-        throw Error(errorMessage);
+        if (response.status === 401) {
+            throw new UnauthorizedError(errorMessage);
+        } else if (response.status === 409) {
+            throw new ConflictError(errorMessage);
+        } else {
+            throw Error("Request failed with status: " + response.status + " message: " + errorMessage);
+        }
     }
 }
 

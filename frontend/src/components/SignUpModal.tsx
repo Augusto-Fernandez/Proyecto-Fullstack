@@ -2,9 +2,11 @@ import { useForm } from "react-hook-form";
 import { UserModel } from "../models/userModel";
 import { SignUpCredentials } from "../network/user_api";
 import * as UserApi from "../network/user_api";
-import { Button, Form, Modal } from "react-bootstrap";
+import { Button, Form, Modal, Alert } from "react-bootstrap";
 import TextInputField from "./Form/TextInputField";
 import styleUtils from "../styles/utils.module.css";
+import { useState } from 'react';
+import { ConflictError } from "../errors/http_errors"; // usa conflict porque es lo que se usa cuando el mail ya está registrado
 
 interface SignUpModalProps {
     onDismiss: () => void, // es para cerrar el modal
@@ -13,6 +15,8 @@ interface SignUpModalProps {
 
 const SignUpModal = ({ onDismiss, onSignUpSuccessful }: SignUpModalProps) => {
 
+    const [errorText, setErrorText] = useState<string | null>(null); //verifica si hubo un error
+
     const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<SignUpCredentials>();
 
     async function onSubmit(credentials: SignUpCredentials) {
@@ -20,7 +24,11 @@ const SignUpModal = ({ onDismiss, onSignUpSuccessful }: SignUpModalProps) => {
             const newUser = await UserApi.signUp(credentials);
             onSignUpSuccessful(newUser);
         } catch (e) {
-            alert(e);
+            if (e instanceof ConflictError) {
+                setErrorText(e.message);
+            } else {
+                alert(e);
+            }
             console.error(e);
         }
     }
@@ -34,6 +42,11 @@ const SignUpModal = ({ onDismiss, onSignUpSuccessful }: SignUpModalProps) => {
                 </Modal.Title>
             </Modal.Header>
             <Modal.Body>
+                {errorText &&
+                    <Alert variant="danger">
+                        {errorText}
+                    </Alert>
+                }
                 <Form onSubmit={handleSubmit(onSubmit)}>
                     <TextInputField
                         name="username"
